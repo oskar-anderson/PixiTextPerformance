@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixiTextPerformance</title>
+    <script src="https://pixijs.download/release/pixi.js"></script>
+</head>
+<body>
+    
+</body>
+<script>
+    let app = new PIXI.Application({ width: 640, height: 480 });
+    document.body.appendChild(app.view);
+    let useBitMapFont = true;  // false use ttf font
+
+    app.loader
+        .add('wwwroot/font/ps2p.fnt')
+        .add('wwwroot/font/PressStart2P/PressStart2P.ttf')
+        .load(onAssetsLoaded);
+
+
+    function onAssetsLoaded() {
+
+        let elapsed = 0.0;
+
+        let frameCount = 0;
+        let width = 100;
+        let height = 100;
+
+
+        let ticker = PIXI.Ticker.shared;
+        ticker.autoStart = false;
+        ticker.maxFPS = 60;
+        ticker.add(() => {
+            frameCount++;
+            elapsed += ticker.elapsedMS;
+            if (frameCount > 600) {
+                console.log("elapsed");
+                console.log(elapsed);
+                ticker.stop();
+            }
+            let drawArea = getDrawArea(width, height);
+            draw(drawArea, frameCount == 1, width, height)
+        });
+        ticker.start();
+    }
+    
+
+    function getDrawArea(width, height) {
+        let drawArea = [];
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let charPool = "ABCDEFGHIJKLNOPQRSTUVWabcdefghijklmnopqrstuvw";
+                let randomNumber = Math.floor(Math.random() * charPool.length);
+                let letter = charPool[randomNumber];
+
+                drawArea.push(letter);
+            }
+        }
+        return drawArea;
+    }
+
+    function draw(drawArea, isFirstRun, width, height) {
+        let scale = 1;
+        let fontSize = 14;
+
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (! isFirstRun) {
+                    app.stage.children[y * width + x].text = drawArea[y * width + x];
+                } else {
+                    let bitmapText;
+                    if (useBitMapFont) {
+                        bitmapText = new PIXI.BitmapText(drawArea[y * width + x], {
+                            fontName: "Press Start 2P",
+                            fontSize: fontSize,
+                            align: "right"
+                        });
+                        bitmapText.tint = 0x008000;
+                    } else {
+                        bitmapText = new PIXI.Text(drawArea[y * width + x]);
+                        bitmapText.style = new PIXI.TextStyle(
+                            {
+                                fill: 0x008000,
+                                fontSize: fontSize,
+                                fontFamily: "Press Start 2P"
+                            }
+                        )
+                    }
+
+                    bitmapText.x = x * fontSize * scale;
+                    bitmapText.y = y * fontSize * scale;
+                    
+                    bitmapText.scale.x = scale;
+                    bitmapText.scale.y = scale;
+                    app.stage.addChild(bitmapText);
+                }
+            }
+        }
+    }
+</script>
+</html>
